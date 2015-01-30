@@ -232,10 +232,10 @@ struct server {
     if (std::regex_match(line, sm, e)) {
       req->method = sm[1];
       std::cout << "method:" << req->method << std::endl;
-      req->path = sm[2];
-      if (req->path.find('?') != std::string::npos) {
+      std::string path = sm[2];
+      if (path.find('?') != std::string::npos) {
         boost::char_separator<char> seps("?&");
-        boost::tokenizer<boost::char_separator<char>> tokens(req->path, seps);
+        boost::tokenizer<boost::char_separator<char>> tokens(path, seps);
         auto itr = tokens.begin();
         req->path = *itr;
         ++itr;
