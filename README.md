@@ -1,6 +1,7 @@
 # asio
 Simple http server framework based on boost::asio, using C++11
 
+[![Build Status](https://travis-ci.org/mnpk/asio.svg)](https://travis-ci.org/mnpk/asio)
 
 ## Example
 ```cpp
