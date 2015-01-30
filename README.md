@@ -3,6 +3,12 @@ Simple http server framework based on boost::asio, using C++11
 
 [![Build Status](https://travis-ci.org/mnpk/asio.svg)](https://travis-ci.org/mnpk/asio)
 
+## Highlights
+- Easy to use
+- Header only
+- [Boost::asio](http://www.boost.org/doc/libs/1_57_0/doc/html/boost_asio.html) base
+- Modern C++ (using C++11)
+
 ## Example
 ```cpp
 #include "server.hpp"
