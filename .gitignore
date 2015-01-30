@@ -1,0 +1,7 @@
+build
+.cproject
+.project
+.*.swp
+tags
+.idea
+atlassian-ide-plugin.xml

@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 2.8)
+project(http_server_example)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -g")
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.55 COMPONENTS thread system REQUIRED)
+message("Boost include dir: ${Boost_INCLUDE_DIR}")
+message("Boost libraries: ${Boost_LIBRARIES}")
+include_directories(${Boost_INCLUDE_DIRS})
+find_package(Threads REQUIRED)
+message("Threads libraries/flag: ${CMAKE_THREAD_LIBS_INIT}")
+
+add_executable(http_server_example example.cpp)
+target_link_libraries(http_server_example ${Boost_LIBRARIES})
+target_link_libraries(http_server_example ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(unittest unittest.cpp)
+target_link_libraries(unittest  ${Boost_LIBRARIES})
+target_link_libraries(unittest  ${CMAKE_THREAD_LIBS_INIT})
