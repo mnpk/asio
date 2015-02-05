@@ -58,17 +58,18 @@ TEST_CASE("response creation with text content", "[response]") {
 TEST_CASE("response creation with json content", "[response]") {
   http::json j;
   j["message"] = "hello";
-  http::response r(j);
+  std::string content = j.dump();
+  http::response r(std::move(j));
 
   REQUIRE(r.code == 200);
-  REQUIRE(r.content == j.dump());
+  REQUIRE(r.content == content);
   REQUIRE(r.headers.count("content-length") == 0);
   REQUIRE(r.headers.count("content-type") > 0);
 
   SECTION("headers will be filled after commit()", "[response]") {
     r.commit();
     REQUIRE(r.code == 200);
-    REQUIRE(r.content == j.dump());
+    REQUIRE(r.content == content);
     REQUIRE(r.headers.count("content-length") > 0);
     REQUIRE(r.headers.count("content-type") > 0);
   }

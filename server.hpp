@@ -1,3 +1,4 @@
+#pragma once 
 #include <boost/asio.hpp>
 #include <boost/tokenizer.hpp>
 #include <regex>
@@ -10,31 +11,6 @@
 namespace http {
 
 using nlohmann::json;
-static std::unordered_map<int, std::string> status_codes = {
-    {200, "HTTP/1.1 200 OK\r\n"},
-    {201, "HTTP/1.1 201 Created\r\n"},
-    {202, "HTTP/1.1 202 Accepted\r\n"},
-    {204, "HTTP/1.1 204 No Content\r\n"},
-
-    {300, "HTTP/1.1 300 Multiple Choices\r\n"},
-    {301, "HTTP/1.1 301 Moved Permanently\r\n"},
-    {302, "HTTP/1.1 302 Moved Temporarily\r\n"},
-    {304, "HTTP/1.1 304 Not Modified\r\n"},
-
-    {400, "HTTP/1.1 400 Bad Request\r\n"},
-    {401, "HTTP/1.1 401 Unauthorized\r\n"},
-    {403, "HTTP/1.1 403 Forbidden\r\n"},
-    {404, "HTTP/1.1 404 Not Found\r\n"},
-
-    {500, "HTTP/1.1 500 Internal Server Error\r\n"},
-    {501, "HTTP/1.1 501 Not Implemented\r\n"},
-    {502, "HTTP/1.1 502 Bad Gateway\r\n"},
-    {503, "HTTP/1.1 503 Service Unavailable\r\n"},
-};
-
-static std::string seperator = ": ";
-static std::string crlf = "\r\n";
-
 struct request {
   std::string method, path, http_version;
   std::istream content;
@@ -50,11 +26,34 @@ struct response {
   response(const char* c) : content(c) {}
   response(const std::string& c) : content(c) {}
   response(int c) : code(c) {}
-  response(json j) : content(j.dump()) {
+  response(json&& j) : content(j.dump()) {
     headers.erase("content-type");
     headers.emplace("content-type", "application/json");
   }
   response& commit() {
+    static std::unordered_map<int, std::string> status_codes = {
+        {200, "HTTP/1.1 200 OK\r\n"},
+        {201, "HTTP/1.1 201 Created\r\n"},
+        {202, "HTTP/1.1 202 Accepted\r\n"},
+        {204, "HTTP/1.1 204 No Content\r\n"},
+
+        {300, "HTTP/1.1 300 Multiple Choices\r\n"},
+        {301, "HTTP/1.1 301 Moved Permanently\r\n"},
+        {302, "HTTP/1.1 302 Moved Temporarily\r\n"},
+        {304, "HTTP/1.1 304 Not Modified\r\n"},
+
+        {400, "HTTP/1.1 400 Bad Request\r\n"},
+        {401, "HTTP/1.1 401 Unauthorized\r\n"},
+        {403, "HTTP/1.1 403 Forbidden\r\n"},
+        {404, "HTTP/1.1 404 Not Found\r\n"},
+
+        {500, "HTTP/1.1 500 Internal Server Error\r\n"},
+        {501, "HTTP/1.1 501 Not Implemented\r\n"},
+        {502, "HTTP/1.1 502 Bad Gateway\r\n"},
+        {503, "HTTP/1.1 503 Service Unavailable\r\n"},
+    };
+
+    status_line = status_codes[code];
     if (code >= 400 && content.empty()) {
       content = status_codes[code].substr(9);
     }
@@ -66,12 +65,16 @@ struct response {
   }
 
   int code{200};
+  std::string status_line;
   std::string content;
   std::unordered_map<std::string, std::string> headers;
 };
 
-std::ostream& operator<<(std::ostream& s, const response& res) {
-  s << status_codes.find(res.code)->second;
+inline std::ostream& operator<<(std::ostream& s, const response& res) {
+  static std::string seperator = ": ";
+  static std::string crlf = "\r\n";
+
+  s << res.status_line;
   for (const auto& h : res.headers) {
     s << h.first << seperator << h.second << crlf;
   }
@@ -243,6 +246,8 @@ struct server {
           std::cout << "param:" << *itr << std::endl;
           req->params.push_back(*itr);
         }
+      } else {
+        req->path = path;
       }
       std::cout << "path:" << req->path << std::endl;
       req->http_version = sm[3];
